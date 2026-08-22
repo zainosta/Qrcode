@@ -144,10 +144,6 @@
     text-align: center;
     margin-top: 15px;
   }
-  .google-icon {
-    display: inline-block;
-    margin-left: 10px;
-  }
 </style>
 </head>
 <body>
@@ -201,6 +197,9 @@ const WHATSAPP_NUMBER = '249117693634';
 // Google Form URL
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScjKJKngOrJISga0KNfy3ikxSz62_Ux9j11kEPZSmA9wf8G9Q/viewform';
 
+// Track if WhatsApp was opened
+let whatsAppOpened = false;
+
 function submitToBoth() {
   // Get form elements
   const name = document.getElementById('name').value.trim();
@@ -216,6 +215,7 @@ function submitToBoth() {
   // Reset status
   status.className = 'status';
   status.style.display = 'none';
+  whatsAppOpened = false;
   
   // Validate required fields
   if (!name) {
@@ -253,17 +253,16 @@ function submitToBoth() {
     timestamp: new Date().toISOString()
   };
   
-  // --- 1. SEND TO GOOGLE FORM ---
-  sendToGoogleForm(formData)
-    .then(() => {
-      console.log('✅ Google Form: Success');
-    })
-    .catch((error) => {
-      console.warn('⚠️ Google Form: Failed', error);
-    });
+  // --- 1. OPEN WHATSAPP FIRST (with delay to ensure it opens) ---
+  // This ensures WhatsApp opens before Google Form
+  setTimeout(() => {
+    sendToWhatsApp(formData);
+  }, 500);
   
-  // --- 2. SEND TO WHATSAPP ---
-  sendToWhatsApp(formData);
+  // --- 2. OPEN GOOGLE FORM AFTER WHATSAPP (with longer delay) ---
+  setTimeout(() => {
+    sendToGoogleForm(formData);
+  }, 1500);
   
   // --- 3. SAVE TO LOCAL STORAGE (Backup) ---
   try {
@@ -274,81 +273,95 @@ function submitToBoth() {
     // Silent fail
   }
   
-  // Show success
-  showStatus('success', '✅ تم الإرسال بنجاح! جاري فتح واتساب...');
+  // Show success message
+  showStatus('success', '✅ جاري فتح واتساب وجوجل فورم...');
   
   // Reset button after delay
   setTimeout(() => {
     submitBtn.disabled = false;
     loading.className = 'loading';
-  }, 3000);
+  }, 4000);
 }
 
 // Function to send to Google Form
 function sendToGoogleForm(data) {
-  return new Promise((resolve, reject) => {
-    try {
-      // Google Forms doesn't accept POST via fetch due to CORS
-      // We'll use the form's native submission method
-      
-      // Create a temporary form
-      const tempForm = document.createElement('form');
-      tempForm.method = 'POST';
-      tempForm.action = GOOGLE_FORM_URL;
-      tempForm.target = '_blank';
-      
-      // Get the entry IDs from your Google Form
-      // You need to inspect your form to get these IDs
-      // For now, we'll use a different approach
-      
-      // Option 1: Open Google Form in new tab (user fills again)
-      // window.open(GOOGLE_FORM_URL, '_blank');
-      
-      // Option 2: Try to submit via URL parameters (if supported)
-      // Not all Google Forms accept GET parameters
-      
-      // Since Google Forms has CORS restrictions, we'll open it
-      // with pre-filled parameters if possible
-      const prefilledURL = GOOGLE_FORM_URL + '?usp=pp_url' +
-        '&entry.726004286=' + encodeURIComponent(data.name) +
-        '&entry.959984559=' + encodeURIComponent(data.address) +
-        '&entry.393130259=' + encodeURIComponent(data.location) +
-        '&entry.1770489728=' + encodeURIComponent(data.phone);
-      
-      // Open in new window
-      window.open(prefilledURL, '_blank');
-      
-      resolve({ success: true });
-    } catch (error) {
-      reject(error);
+  try {
+    // Using the entry IDs you provided
+    const prefilledURL = GOOGLE_FORM_URL + '?usp=pp_url' +
+      '&entry.726004286=' + encodeURIComponent(data.name) +
+      '&entry.959984559=' + encodeURIComponent(data.address) +
+      '&entry.393130259=' + encodeURIComponent(data.location) +
+      '&entry.1770489728=' + encodeURIComponent(data.phone);
+    
+    // Open Google Form in new window
+    const googleWindow = window.open(prefilledURL, '_blank');
+    
+    // If popup blocked, try alternative method
+    if (!googleWindow || googleWindow.closed) {
+      console.warn('⚠️ Google Form popup was blocked');
+      // Try to open in same window as last resort
+      // window.location.href = prefilledURL;
     }
-  });
+    
+    console.log('✅ Google Form opened with data');
+  } catch (error) {
+    console.warn('⚠️ Google Form error:', error);
+  }
 }
 
-// Function to send to WhatsApp
+// Function to send to WhatsApp - FIXED VERSION
 function sendToWhatsApp(data) {
-  // Build the WhatsApp message with all fields
-  let whatsappMessage = '';
-  whatsappMessage += '📋 *بيانات النموذج:*\n\n';
-  whatsappMessage += `👤 *الإسم:* ${data.name}\n`;
-  whatsappMessage += `🏠 *العنوان:* ${data.address}\n`;
-  whatsappMessage += `📍 *الموقع:* ${data.location}\n`;
-  whatsappMessage += `📞 *التلفون:* ${data.phone}\n`;
-  if (data.message) {
-    whatsappMessage += `\n💬 *رسالة إضافية:*\n${data.message}\n`;
+  try {
+    // Build the WhatsApp message with all fields
+    let whatsappMessage = '';
+    whatsappMessage += '📋 *بيانات النموذج:*\n\n';
+    whatsappMessage += `👤 *الإسم:* ${data.name}\n`;
+    whatsappMessage += `🏠 *العنوان:* ${data.address}\n`;
+    whatsappMessage += `📍 *الموقع:* ${data.location}\n`;
+    whatsappMessage += `📞 *التلفون:* ${data.phone}\n`;
+    if (data.message) {
+      whatsappMessage += `\n💬 *رسالة إضافية:*\n${data.message}\n`;
+    }
+    whatsappMessage += `\n📅 *تاريخ الإرسال:* ${new Date().toLocaleString('ar-SA')}`;
+    
+    // Encode the message for URL
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    
+    // Create WhatsApp URL
+    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    
+    console.log('📱 Opening WhatsApp with URL:', whatsappURL);
+    
+    // TRY MULTIPLE METHODS TO OPEN WHATSAPP
+    
+    // Method 1: Open in new tab/window (most reliable)
+    const whatsappWindow = window.open(whatsappURL, '_blank');
+    
+    if (!whatsappWindow || whatsappWindow.closed) {
+      // Method 2: If popup blocked, try redirect in current window
+      console.warn('⚠️ WhatsApp popup blocked, trying redirect...');
+      showStatus('info', '⚠️ الرجاء السماح للنوافذ المنبثقة');
+      // Try to open in current window (works on mobile)
+      window.location.href = whatsappURL;
+    } else {
+      console.log('✅ WhatsApp opened successfully!');
+      whatsAppOpened = true;
+    }
+    
+    // Method 3: For mobile, also try the intent URL
+    // This helps with mobile browsers
+    setTimeout(() => {
+      if (!whatsAppOpened) {
+        // Try mobile intent URL
+        const mobileWhatsAppURL = `intent://send?text=${encodedMessage}&phone=${WHATSAPP_NUMBER}#Intent;scheme=whatsapp;package=com.whatsapp;end;`;
+        window.open(mobileWhatsAppURL, '_blank');
+      }
+    }, 1000);
+    
+  } catch (error) {
+    console.error('❌ WhatsApp error:', error);
+    showStatus('error', '❌ فشل فتح واتساب. يرجى المحاولة مرة أخرى');
   }
-  whatsappMessage += `\n📅 *تاريخ الإرسال:* ${new Date().toLocaleString('ar-SA')}`;
-  
-  // Encode the message for URL
-  const encodedMessage = encodeURIComponent(whatsappMessage);
-  
-  // Create WhatsApp URL
-  const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-  
-  // Open WhatsApp after a short delay
-  setTimeout(() => {
-    window.open(whatsappURL, '_blank');
-  }, 1500);
 }
 
 // Helper function to show status messages
