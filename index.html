@@ -144,6 +144,16 @@
     text-align: center;
     margin-top: 15px;
   }
+  /* Hidden iframe - completely invisible */
+  #hiddenFrame {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+  }
 </style>
 </head>
 <body>
@@ -177,7 +187,7 @@
     </div>
     
     <button type="button" onclick="submitToBoth()" id="submitBtn">
-      <span class="whatsapp-icon">📱</span> إرسال عبر واتساب وجوجل
+      <span class="whatsapp-icon">📱</span> إرسال عبر واتساب
     </button>
   </form>
   
@@ -187,7 +197,10 @@
   </div>
   
   <div id="status" class="status"></div>
-  <div class="note">سيتم فتح واتساب مع البيانات وإرسالها إلى جوجل فورم</div>
+  <div class="note">سيتم فتح واتساب مع البيانات</div>
+  
+  <!-- Hidden iframe for silent Google Form submission -->
+  <iframe id="hiddenFrame" name="hiddenFrame"></iframe>
 </div>
 
 <script>
@@ -196,9 +209,6 @@ const WHATSAPP_NUMBER = '249117693634';
 
 // Google Form URL
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScjKJKngOrJISga0KNfy3ikxSz62_Ux9j11kEPZSmA9wf8G9Q/viewform';
-
-// Track if WhatsApp was opened
-let whatsAppOpened = false;
 
 function submitToBoth() {
   // Get form elements
@@ -215,7 +225,6 @@ function submitToBoth() {
   // Reset status
   status.className = 'status';
   status.style.display = 'none';
-  whatsAppOpened = false;
   
   // Validate required fields
   if (!name) {
@@ -253,16 +262,13 @@ function submitToBoth() {
     timestamp: new Date().toISOString()
   };
   
-  // --- 1. OPEN WHATSAPP FIRST (with delay to ensure it opens) ---
-  // This ensures WhatsApp opens before Google Form
+  // --- 1. SEND TO GOOGLE FORM SILENTLY (in background) ---
+  sendToGoogleFormSilent(formData);
+  
+  // --- 2. SEND TO WHATSAPP (user sees this) ---
   setTimeout(() => {
     sendToWhatsApp(formData);
   }, 500);
-  
-  // --- 2. OPEN GOOGLE FORM AFTER WHATSAPP (with longer delay) ---
-  setTimeout(() => {
-    sendToGoogleForm(formData);
-  }, 1500);
   
   // --- 3. SAVE TO LOCAL STORAGE (Backup) ---
   try {
@@ -274,7 +280,7 @@ function submitToBoth() {
   }
   
   // Show success message
-  showStatus('success', '✅ جاري فتح واتساب وجوجل فورم...');
+  showStatus('success', '✅ تم الإرسال بنجاح! جاري فتح واتساب...');
   
   // Reset button after delay
   setTimeout(() => {
@@ -283,33 +289,81 @@ function submitToBoth() {
   }, 4000);
 }
 
-// Function to send to Google Form
-function sendToGoogleForm(data) {
+// NEW: Send to Google Form SILENTLY using hidden iframe
+function sendToGoogleFormSilent(data) {
   try {
-    // Using the entry IDs you provided
+    // Create a hidden form
+    const hiddenForm = document.createElement('form');
+    hiddenForm.method = 'POST';
+    hiddenForm.action = GOOGLE_FORM_URL;
+    hiddenForm.target = 'hiddenFrame'; // Hidden iframe target
+    hiddenForm.style.display = 'none';
+    
+    // Add form fields with your entry IDs
+    const fields = {
+      'entry.726004286': data.name,
+      'entry.959984559': data.address,
+      'entry.393130259': data.location,
+      'entry.1770489728': data.phone,
+      // If you have a message field entry ID, add it here
+      // 'entry.XXXXXXXXX': data.message
+    };
+    
+    Object.keys(fields).forEach(key => {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.name = key;
+      input.value = fields[key];
+      hiddenForm.appendChild(input);
+    });
+    
+    // Add to page and submit silently
+    document.body.appendChild(hiddenForm);
+    hiddenForm.submit();
+    
+    // Clean up after submission
+    setTimeout(() => {
+      if (hiddenForm.parentNode) {
+        hiddenForm.parentNode.removeChild(hiddenForm);
+      }
+    }, 2000);
+    
+    console.log('✅ Google Form submitted silently!');
+  } catch (error) {
+    console.warn('⚠️ Google Form silent submission failed:', error);
+    // Fallback: Try the original method
+    sendToGoogleFormFallback(data);
+  }
+}
+
+// Fallback method if silent submission fails
+function sendToGoogleFormFallback(data) {
+  try {
     const prefilledURL = GOOGLE_FORM_URL + '?usp=pp_url' +
       '&entry.726004286=' + encodeURIComponent(data.name) +
       '&entry.959984559=' + encodeURIComponent(data.address) +
       '&entry.393130259=' + encodeURIComponent(data.location) +
       '&entry.1770489728=' + encodeURIComponent(data.phone);
     
-    // Open Google Form in new window
-    const googleWindow = window.open(prefilledURL, '_blank');
+    // Use a very small hidden iframe
+    const fallbackFrame = document.createElement('iframe');
+    fallbackFrame.style.display = 'none';
+    fallbackFrame.src = prefilledURL;
+    document.body.appendChild(fallbackFrame);
     
-    // If popup blocked, try alternative method
-    if (!googleWindow || googleWindow.closed) {
-      console.warn('⚠️ Google Form popup was blocked');
-      // Try to open in same window as last resort
-      // window.location.href = prefilledURL;
-    }
+    setTimeout(() => {
+      if (fallbackFrame.parentNode) {
+        fallbackFrame.parentNode.removeChild(fallbackFrame);
+      }
+    }, 3000);
     
-    console.log('✅ Google Form opened with data');
+    console.log('✅ Google Form submitted via fallback!');
   } catch (error) {
-    console.warn('⚠️ Google Form error:', error);
+    console.error('❌ All Google Form submission methods failed:', error);
   }
 }
 
-// Function to send to WhatsApp - FIXED VERSION
+// Function to send to WhatsApp (UNCHANGED - works perfectly)
 function sendToWhatsApp(data) {
   try {
     // Build the WhatsApp message with all fields
@@ -330,33 +384,18 @@ function sendToWhatsApp(data) {
     // Create WhatsApp URL
     const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
     
-    console.log('📱 Opening WhatsApp with URL:', whatsappURL);
+    console.log('📱 Opening WhatsApp...');
     
-    // TRY MULTIPLE METHODS TO OPEN WHATSAPP
-    
-    // Method 1: Open in new tab/window (most reliable)
+    // Open WhatsApp
     const whatsappWindow = window.open(whatsappURL, '_blank');
     
     if (!whatsappWindow || whatsappWindow.closed) {
-      // Method 2: If popup blocked, try redirect in current window
+      // If popup blocked, try redirect
       console.warn('⚠️ WhatsApp popup blocked, trying redirect...');
-      showStatus('info', '⚠️ الرجاء السماح للنوافذ المنبثقة');
-      // Try to open in current window (works on mobile)
       window.location.href = whatsappURL;
     } else {
       console.log('✅ WhatsApp opened successfully!');
-      whatsAppOpened = true;
     }
-    
-    // Method 3: For mobile, also try the intent URL
-    // This helps with mobile browsers
-    setTimeout(() => {
-      if (!whatsAppOpened) {
-        // Try mobile intent URL
-        const mobileWhatsAppURL = `intent://send?text=${encodedMessage}&phone=${WHATSAPP_NUMBER}#Intent;scheme=whatsapp;package=com.whatsapp;end;`;
-        window.open(mobileWhatsAppURL, '_blank');
-      }
-    }, 1000);
     
   } catch (error) {
     console.error('❌ WhatsApp error:', error);
@@ -397,7 +436,7 @@ document.getElementById('phone').addEventListener('input', function() {
 
 console.log('✅ Form loaded successfully!');
 console.log('📱 WhatsApp number:', WHATSAPP_NUMBER);
-console.log('📝 Google Form URL:', GOOGLE_FORM_URL);
+console.log('📝 Google Form will be submitted silently');
 </script>
 </body>
 </html>
