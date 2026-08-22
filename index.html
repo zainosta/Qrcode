@@ -194,18 +194,9 @@
 // WhatsApp number (without + or 00, just the number)
 const WHATSAPP_NUMBER = '249117693634';
 
-// Google Form URL
-const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScjKJKngOrJISga0KNfy3ikxSz62_Ux9j11kEPZSmA9wf8G9Q/viewform';
-
-// Your Google Form entry IDs (verified)
-const ENTRY_IDS = {
-  name: 'entry.726004286',
-  address: 'entry.959984559',
-  location: 'entry.393130259',
-  phone: 'entry.1770489728'
-  // Note: Google Forms doesn't have a dedicated message field in your form
-  // The message will still go to WhatsApp
-};
+// 🔴 IMPORTANT: REPLACE THIS WITH YOUR ACTUAL APPS SCRIPT WEBHOOK URL
+// After deploying your Apps Script, copy the URL and paste it here
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_ACTUAL_SCRIPT_ID/exec';
 
 function submitToBoth() {
   // Get form elements
@@ -259,14 +250,13 @@ function submitToBoth() {
     timestamp: new Date().toISOString()
   };
   
-  // --- 1. OPEN GOOGLE FORM WITH PREFILLED DATA (auto-submit) ---
-  // This is the most reliable method that actually works
-  openGoogleFormWithData(formData);
+  // --- 1. SEND TO GOOGLE SHEETS SILENTLY via Apps Script ---
+  sendToGoogleSheets(formData);
   
   // --- 2. SEND TO WHATSAPP (user sees this) ---
   setTimeout(() => {
     sendToWhatsApp(formData);
-  }, 800);
+  }, 500);
   
   // --- 3. SAVE TO LOCAL STORAGE (Backup) ---
   try {
@@ -284,63 +274,34 @@ function submitToBoth() {
   setTimeout(() => {
     submitBtn.disabled = false;
     loading.className = 'loading';
-  }, 5000);
+  }, 4000);
 }
 
-// NEW: Open Google Form with pre-filled data and auto-submit
-function openGoogleFormWithData(data) {
-  try {
-    // Build the prefilled URL with all data
-    const prefilledURL = GOOGLE_FORM_URL + '?usp=pp_url' +
-      '&' + ENTRY_IDS.name + '=' + encodeURIComponent(data.name) +
-      '&' + ENTRY_IDS.address + '=' + encodeURIComponent(data.address) +
-      '&' + ENTRY_IDS.location + '=' + encodeURIComponent(data.location) +
-      '&' + ENTRY_IDS.phone + '=' + encodeURIComponent(data.phone);
-    
-    console.log('📝 Opening Google Form with data...');
-    console.log('URL:', prefilledURL);
-    
-    // Open Google Form in a new small window (user barely notices)
-    const googleWindow = window.open(
-      prefilledURL, 
-      '_blank',
-      'width=400,height=300,menubar=no,toolbar=no,location=no,status=no'
-    );
-    
-    // After a short delay, try to auto-submit
-    if (googleWindow) {
-      setTimeout(() => {
-        try {
-          // Try to find and click the submit button in the Google Form
-          // This works if the form loads fully
-          const submitButton = googleWindow.document.querySelector('div[role="button"]');
-          if (submitButton) {
-            submitButton.click();
-            console.log('✅ Google Form auto-submitted!');
-          } else {
-            console.log('⚠️ Could not find submit button - user may need to click submit');
-          }
-        } catch (e) {
-          console.log('⚠️ Auto-submit not possible due to cross-origin');
-          // This is expected - cross-origin prevents script access
-        }
-      }, 2000);
-    }
-    
-    console.log('✅ Google Form opened with pre-filled data');
-    
-    // Close the Google Form window after 5 seconds (optional)
-    // This creates a seamless experience
-    setTimeout(() => {
-      if (googleWindow && !googleWindow.closed) {
-        // Don't force close - let user see it was submitted
-        // googleWindow.close();
-      }
-    }, 5000);
-    
-  } catch (error) {
-    console.error('❌ Error opening Google Form:', error);
+// NEW: Send to Google Sheets SILENTLY using Apps Script Webhook
+function sendToGoogleSheets(data) {
+  // Check if URL is configured
+  if (GOOGLE_APPS_SCRIPT_URL.includes('YOUR_ACTUAL_SCRIPT_ID')) {
+    console.warn('⚠️ Please configure your Google Apps Script URL first!');
+    showStatus('info', '⚠️ جاري الإعداد... يرجى المحاولة مرة أخرى');
+    return;
   }
+  
+  // Send data to Google Sheets via POST
+  fetch(GOOGLE_APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors', // Important for cross-origin requests
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data)
+  })
+  .then(() => {
+    console.log('✅ Data sent to Google Sheets successfully!');
+  })
+  .catch((error) => {
+    console.error('❌ Failed to send to Google Sheets:', error);
+    // Don't show error to user - WhatsApp still works
+  });
 }
 
 // Function to send to WhatsApp (UNCHANGED - works perfectly)
@@ -366,11 +327,11 @@ function sendToWhatsApp(data) {
     
     console.log('📱 Opening WhatsApp...');
     
-    // Open WhatsApp
+    // Open WhatsApp - THIS IS THE ONLY THING THE USER SEES
     const whatsappWindow = window.open(whatsappURL, '_blank');
     
     if (!whatsappWindow || whatsappWindow.closed) {
-      // If popup blocked, try redirect
+      // If popup blocked, try redirect (works on mobile)
       console.warn('⚠️ WhatsApp popup blocked, trying redirect...');
       window.location.href = whatsappURL;
     } else {
@@ -416,8 +377,7 @@ document.getElementById('phone').addEventListener('input', function() {
 
 console.log('✅ Form loaded successfully!');
 console.log('📱 WhatsApp number:', WHATSAPP_NUMBER);
-console.log('📝 Google Form will open with pre-filled data');
-console.log('🔑 Entry IDs:', ENTRY_IDS);
+console.log('📝 Google Sheets Webhook URL:', GOOGLE_APPS_SCRIPT_URL);
 </script>
 </body>
 </html>
