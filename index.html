@@ -5,127 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نموذج التواصل</title>
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-  }
-  .container {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    max-width: 500px;
-    width: 100%;
-  }
-  h2 {
-    color: #333;
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  .form-group {
-    margin-bottom: 20px;
-  }
-  label {
-    display: block;
-    color: #555;
-    margin-bottom: 8px;
-    font-weight: bold;
-  }
-  .required {
-    color: #e74c3c;
-  }
-  input, textarea {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-    background: #f9f9f9;
-  }
-  input:focus, textarea:focus {
-    outline: none;
-    border-color: #667eea;
-    background: white;
-  }
-  textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-  button {
-    width: 100%;
-    padding: 15px;
-    background: #25D366;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 10px;
-  }
-  button:hover {
-    background: #128C7E;
-  }
-  button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  .status {
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 8px;
-    display: none;
-    text-align: center;
-    font-weight: bold;
-  }
-  .success {
-    display: block;
-    background: #d4edda;
-    color: #155724;
-  }
-  .error {
-    display: block;
-    background: #f8d7da;
-    color: #721c24;
-  }
-  .loading {
-    display: none;
-    text-align: center;
-    margin-top: 15px;
-  }
-  .loading.active {
-    display: block;
-  }
-  .spinner {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  .note {
-    font-size: 12px;
-    color: #888;
-    text-align: center;
-    margin-top: 15px;
-  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+  body{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+  .container{background:white;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.3);max-width:500px;width:100%}
+  h2{color:#333;margin-bottom:20px;text-align:center}
+  .form-group{margin-bottom:20px}
+  label{display:block;color:#555;margin-bottom:8px;font-weight:bold}
+  .required{color:#e74c3c}
+  input,textarea{width:100%;padding:12px 15px;border:2px solid #ddd;border-radius:8px;font-size:16px;background:#f9f9f9}
+  input:focus,textarea:focus{outline:none;border-color:#667eea;background:white}
+  textarea{resize:vertical;min-height:100px}
+  button{width:100%;padding:15px;background:#25D366;color:white;border:none;border-radius:8px;font-size:18px;font-weight:bold;cursor:pointer;transition:all 0.3s;margin-top:10px}
+  button:hover{background:#128C7E}
+  button:disabled{opacity:0.6;cursor:not-allowed}
+  .status{margin-top:15px;padding:12px;border-radius:8px;display:none;text-align:center;font-weight:bold}
+  .success{display:block;background:#d4edda;color:#155724}
+  .error{display:block;background:#f8d7da;color:#721c24}
+  .loading{display:none;text-align:center;margin-top:15px}
+  .loading.active{display:block}
+  .spinner{display:inline-block;width:30px;height:30px;border:4px solid #f3f3f3;border-top:4px solid #667eea;border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+  .note{font-size:12px;color:#888;text-align:center;margin-top:15px}
 </style>
 </head>
 <body>
@@ -137,22 +37,18 @@
       <label>الإسم <span class="required">*</span></label>
       <input type="text" id="name" placeholder="أدخل الإسم الكامل" required>
     </div>
-    
     <div class="form-group">
       <label>العنوان <span class="required">*</span></label>
       <input type="text" id="address" placeholder="أدخل العنوان" required>
     </div>
-    
     <div class="form-group">
       <label>الموقع <span class="required">*</span></label>
       <input type="text" id="location" placeholder="أدخل الموقع" required>
     </div>
-    
     <div class="form-group">
       <label>التلفون <span class="required">*</span></label>
       <input type="tel" id="phone" placeholder="أدخل رقم التلفون" required>
     </div>
-    
     <div class="form-group">
       <label>رسالة إضافية</label>
       <textarea id="message" placeholder="أدخل أي تفاصيل إضافية..."></textarea>
@@ -165,7 +61,7 @@
   
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <p style="margin-top: 10px; color: #666;">جاري الإرسال...</p>
+    <p style="margin-top:10px;color:#666;">جاري الإرسال...</p>
   </div>
   
   <div id="status" class="status"></div>
@@ -175,11 +71,10 @@
 <script>
 const WHATSAPP_NUMBER = '249117693634';
 
-// ⚠️ REPLACE THIS WITH YOUR APPS SCRIPT URL
+// ⚠️ REPLACE THIS URL WITH YOUR NEW ONE AFTER REDEPLOYING WITH "Anyone" ACCESS
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxImmqZPa_3CASo5I2FJ29OrbDKHpLDS8mhkPKIBqiERQlQYQN-y-L4eSjAiDwxeJekYA/exec';
 
 function submitForm() {
-  // Get values
   const name = document.getElementById('name').value.trim();
   const address = document.getElementById('address').value.trim();
   const location = document.getElementById('location').value.trim();
@@ -190,34 +85,43 @@ function submitForm() {
   const submitBtn = document.getElementById('submitBtn');
   const loading = document.getElementById('loading');
   
-  // Reset status
   status.className = 'status';
   status.style.display = 'none';
   
-  // Validate
   if (!name) { showStatus('error', '❌ الرجاء إدخال الإسم'); return; }
   if (!address) { showStatus('error', '❌ الرجاء إدخال العنوان'); return; }
   if (!location) { showStatus('error', '❌ الرجاء إدخال الموقع'); return; }
   if (!phone) { showStatus('error', '❌ الرجاء إدخال رقم التلفون'); return; }
   
-  // Show loading
   submitBtn.disabled = true;
   loading.className = 'loading active';
   
-  // Prepare data
-  const formData = {
-    name: name,
-    address: address,
-    location: location,
-    phone: phone
-  };
+  const formData = { name, address, location, phone };
+  
+  console.log('📡 Sending to:', WEBHOOK_URL);
   
   // Send to Google Sheets
-  sendToGoogleSheets(formData);
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData)
+  })
+  .then(response => {
+    console.log('📥 Response status:', response.status);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  })
+  .then(result => {
+    console.log('✅ Success:', result);
+  })
+  .catch(error => {
+    console.error('❌ Error:', error);
+    // Don't show to user - WhatsApp still works
+  });
   
   // Send to WhatsApp
   setTimeout(() => {
-    sendToWhatsApp({ ...formData, message: message });
+    sendToWhatsApp({ ...formData, message });
   }, 500);
   
   showStatus('success', '✅ تم الإرسال بنجاح! جاري فتح واتساب...');
@@ -226,28 +130,6 @@ function submitForm() {
     submitBtn.disabled = false;
     loading.className = 'loading';
   }, 4000);
-}
-
-function sendToGoogleSheets(data) {
-  console.log('📡 Sending to:', WEBHOOK_URL);
-  
-  fetch(WEBHOOK_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data)
-  })
-  .then(response => response.json())
-  .then(result => {
-    console.log('✅ Response:', result);
-    if (result.success) {
-      console.log('✅ Data saved!');
-    }
-  })
-  .catch(error => {
-    console.error('❌ Error:', error);
-  });
 }
 
 function sendToWhatsApp(data) {
@@ -259,8 +141,7 @@ function sendToWhatsApp(data) {
   if (data.message) msg += `\n💬 *رسالة إضافية:*\n${data.message}\n`;
   msg += `\n📅 *تاريخ الإرسال:* ${new Date().toLocaleString('ar-SA')}`;
   
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function showStatus(type, message) {
@@ -270,28 +151,21 @@ function showStatus(type, message) {
   status.textContent = message;
 }
 
-// Enter key support
 document.addEventListener('keypress', function(e) {
   if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
     e.preventDefault();
     const inputs = document.querySelectorAll('input, textarea');
     let index = Array.from(inputs).indexOf(e.target);
-    if (index < inputs.length - 1) {
-      inputs[index + 1].focus();
-    } else {
-      submitForm();
-    }
+    if (index < inputs.length - 1) inputs[index + 1].focus();
+    else submitForm();
   }
 });
 
-// Phone number formatting
 document.getElementById('phone').addEventListener('input', function() {
   this.value = this.value.replace(/[^0-9+]/g, '');
 });
 
 console.log('✅ Form loaded!');
-console.log('📱 WhatsApp:', WHATSAPP_NUMBER);
-console.log('📡 Webhook:', WEBHOOK_URL);
 </script>
 </body>
 </html>
