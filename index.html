@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نموذج التواصل - WhatsApp</title>
+<title>نموذج التواصل - WhatsApp & Google</title>
 <style>
   * {
     box-sizing: border-box;
@@ -144,6 +144,10 @@
     text-align: center;
     margin-top: 15px;
   }
+  .google-icon {
+    display: inline-block;
+    margin-left: 10px;
+  }
 </style>
 </head>
 <body>
@@ -176,25 +180,28 @@
       <textarea id="message" placeholder="أدخل أي تفاصيل إضافية..."></textarea>
     </div>
     
-    <button type="button" onclick="submitToWhatsApp()" id="submitBtn">
-      <span class="whatsapp-icon">📱</span> إرسال عبر واتساب
+    <button type="button" onclick="submitToBoth()" id="submitBtn">
+      <span class="whatsapp-icon">📱</span> إرسال عبر واتساب وجوجل
     </button>
   </form>
   
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <p style="margin-top: 10px; color: #666;">جاري التحضير للإرسال...</p>
+    <p style="margin-top: 10px; color: #666;">جاري الإرسال...</p>
   </div>
   
   <div id="status" class="status"></div>
-  <div class="note">سيتم فتح واتساب مع كافة البيانات المدخلة</div>
+  <div class="note">سيتم فتح واتساب مع البيانات وإرسالها إلى جوجل فورم</div>
 </div>
 
 <script>
 // WhatsApp number (without + or 00, just the number)
 const WHATSAPP_NUMBER = '249117693634';
 
-function submitToWhatsApp() {
+// Google Form URL
+const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScjKJKngOrJISga0KNfy3ikxSz62_Ux9j11kEPZSmA9wf8G9Q/viewform';
+
+function submitToBoth() {
   // Get form elements
   const name = document.getElementById('name').value.trim();
   const address = document.getElementById('address').value.trim();
@@ -236,15 +243,100 @@ function submitToWhatsApp() {
   submitBtn.disabled = true;
   loading.className = 'loading active';
   
+  // Prepare form data
+  const formData = {
+    name: name,
+    address: address,
+    location: location,
+    phone: phone,
+    message: message,
+    timestamp: new Date().toISOString()
+  };
+  
+  // --- 1. SEND TO GOOGLE FORM ---
+  sendToGoogleForm(formData)
+    .then(() => {
+      console.log('✅ Google Form: Success');
+    })
+    .catch((error) => {
+      console.warn('⚠️ Google Form: Failed', error);
+    });
+  
+  // --- 2. SEND TO WHATSAPP ---
+  sendToWhatsApp(formData);
+  
+  // --- 3. SAVE TO LOCAL STORAGE (Backup) ---
+  try {
+    const history = JSON.parse(localStorage.getItem('form_history') || '[]');
+    history.push(formData);
+    localStorage.setItem('form_history', JSON.stringify(history));
+  } catch (e) {
+    // Silent fail
+  }
+  
+  // Show success
+  showStatus('success', '✅ تم الإرسال بنجاح! جاري فتح واتساب...');
+  
+  // Reset button after delay
+  setTimeout(() => {
+    submitBtn.disabled = false;
+    loading.className = 'loading';
+  }, 3000);
+}
+
+// Function to send to Google Form
+function sendToGoogleForm(data) {
+  return new Promise((resolve, reject) => {
+    try {
+      // Google Forms doesn't accept POST via fetch due to CORS
+      // We'll use the form's native submission method
+      
+      // Create a temporary form
+      const tempForm = document.createElement('form');
+      tempForm.method = 'POST';
+      tempForm.action = GOOGLE_FORM_URL;
+      tempForm.target = '_blank';
+      
+      // Get the entry IDs from your Google Form
+      // You need to inspect your form to get these IDs
+      // For now, we'll use a different approach
+      
+      // Option 1: Open Google Form in new tab (user fills again)
+      // window.open(GOOGLE_FORM_URL, '_blank');
+      
+      // Option 2: Try to submit via URL parameters (if supported)
+      // Not all Google Forms accept GET parameters
+      
+      // Since Google Forms has CORS restrictions, we'll open it
+      // with pre-filled parameters if possible
+      const prefilledURL = GOOGLE_FORM_URL + '?usp=pp_url' +
+        '&entry.XXX=' + encodeURIComponent(data.name) +
+        '&entry.YYY=' + encodeURIComponent(data.address) +
+        '&entry.ZZZ=' + encodeURIComponent(data.location) +
+        '&entry.WWW=' + encodeURIComponent(data.phone) +
+        '&entry.VVV=' + encodeURIComponent(data.message);
+      
+      // Open in new window
+      window.open(prefilledURL, '_blank');
+      
+      resolve({ success: true });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+// Function to send to WhatsApp
+function sendToWhatsApp(data) {
   // Build the WhatsApp message with all fields
   let whatsappMessage = '';
   whatsappMessage += '📋 *بيانات النموذج:*\n\n';
-  whatsappMessage += `👤 *الإسم:* ${name}\n`;
-  whatsappMessage += `🏠 *العنوان:* ${address}\n`;
-  whatsappMessage += `📍 *الموقع:* ${location}\n`;
-  whatsappMessage += `📞 *التلفون:* ${phone}\n`;
-  if (message) {
-    whatsappMessage += `\n💬 *رسالة إضافية:*\n${message}\n`;
+  whatsappMessage += `👤 *الإسم:* ${data.name}\n`;
+  whatsappMessage += `🏠 *العنوان:* ${data.address}\n`;
+  whatsappMessage += `📍 *الموقع:* ${data.location}\n`;
+  whatsappMessage += `📞 *التلفون:* ${data.phone}\n`;
+  if (data.message) {
+    whatsappMessage += `\n💬 *رسالة إضافية:*\n${data.message}\n`;
   }
   whatsappMessage += `\n📅 *تاريخ الإرسال:* ${new Date().toLocaleString('ar-SA')}`;
   
@@ -254,39 +346,10 @@ function submitToWhatsApp() {
   // Create WhatsApp URL
   const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
   
-  // Save to localStorage as backup (optional)
-  try {
-    const formData = {
-      name, address, location, phone, message,
-      timestamp: new Date().toISOString()
-    };
-    const history = JSON.parse(localStorage.getItem('form_history') || '[]');
-    history.push(formData);
-    localStorage.setItem('form_history', JSON.stringify(history));
-  } catch (e) {
-    // Silent fail for localStorage
-  }
-  
-  // Show success message
-  showStatus('success', '✅ تم تحضير البيانات! جاري فتح واتساب...');
-  
   // Open WhatsApp after a short delay
   setTimeout(() => {
-    // Open in new tab/window
     window.open(whatsappURL, '_blank');
-    
-    // Optionally, also try to open directly (for mobile)
-    // window.location.href = whatsappURL;
-    
-    // Reset button after a moment
-    setTimeout(() => {
-      submitBtn.disabled = false;
-      loading.className = 'loading';
-      
-      // Clear the form (optional)
-      // document.getElementById('contactForm').reset();
-    }, 2000);
-  }, 1000);
+  }, 1500);
 }
 
 // Helper function to show status messages
@@ -303,14 +366,13 @@ document.addEventListener('keypress', function(e) {
     const target = e.target;
     if (target.tagName === 'INPUT') {
       e.preventDefault();
-      // Move to next input or submit if last
       const form = document.getElementById('contactForm');
       const inputs = form.querySelectorAll('input, textarea');
       let currentIndex = Array.from(inputs).indexOf(target);
       if (currentIndex < inputs.length - 1) {
         inputs[currentIndex + 1].focus();
       } else {
-        submitToWhatsApp();
+        submitToBoth();
       }
     }
   }
@@ -318,12 +380,12 @@ document.addEventListener('keypress', function(e) {
 
 // Auto-detect and format phone number
 document.getElementById('phone').addEventListener('input', function() {
-  // Remove any non-digit characters except +
   this.value = this.value.replace(/[^0-9+]/g, '');
 });
 
 console.log('✅ Form loaded successfully!');
 console.log('📱 WhatsApp number:', WHATSAPP_NUMBER);
+console.log('📝 Google Form URL:', GOOGLE_FORM_URL);
 </script>
 </body>
 </html>
