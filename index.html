@@ -191,11 +191,11 @@
 </div>
 
 <script>
-// WhatsApp number (without + or 00, just the number)
+// WhatsApp number
 const WHATSAPP_NUMBER = '249117693634';
 
-// Your Google Apps Script Webhook URL
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9STo2FtePiJHFDMwCFjO6FO-tFou9-2thl5pnWLF963YFUot0ajBKD_VYWOgPI8EaYg/exec';
+// ⚠️ IMPORTANT: Replace this with your NEW Apps Script URL after redeploying
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw8t_pqPvao8P0XNI16tj3pcmEL_1h2B6eC9td4iNHm73rudA6FegrSxcRXbMHzNojeGA/exec';
 
 function submitToBoth() {
   // Get form elements
@@ -249,18 +249,17 @@ function submitToBoth() {
     timestamp: new Date().toISOString()
   };
   
-  // Log what we're sending
   console.log('📤 Sending data to Google Sheets:', formData);
   
-  // --- 1. SEND TO GOOGLE SHEETS SILENTLY via Apps Script ---
+  // --- 1. SEND TO GOOGLE SHEETS ---
   sendToGoogleSheets(formData);
   
-  // --- 2. SEND TO WHATSAPP (user sees this) ---
+  // --- 2. SEND TO WHATSAPP ---
   setTimeout(() => {
     sendToWhatsApp(formData);
   }, 500);
   
-  // --- 3. SAVE TO LOCAL STORAGE (Backup) ---
+  // --- 3. SAVE TO LOCAL STORAGE ---
   try {
     const history = JSON.parse(localStorage.getItem('form_history') || '[]');
     history.push(formData);
@@ -279,39 +278,45 @@ function submitToBoth() {
   }, 4000);
 }
 
-// FIXED: Send to Google Sheets using proper fetch
+// Send to Google Sheets
 function sendToGoogleSheets(data) {
-  // Send data to Google Sheets via POST
+  // Check if URL is configured
+  if (GOOGLE_APPS_SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbw8t_pqPvao8P0XNI16tj3pcmEL_1h2B6eC9td4iNHm73rudA6FegrSxcRXbMHzNojeGA/exec')) {
+    console.error('❌ Please update the GOOGLE_APPS_SCRIPT_URL with your actual webhook URL');
+    showStatus('error', '❌ خطأ في الإعدادات. يرجى الاتصال بالدعم');
+    return;
+  }
+  
   fetch(GOOGLE_APPS_SCRIPT_URL, {
     method: 'POST',
-    // 🔴 REMOVED 'no-cors' - this was the problem!
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(data)
   })
   .then(response => {
-    // Check if response is OK
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     return response.json();
   })
   .then(result => {
-    console.log('✅ Data sent to Google Sheets successfully!', result);
-    // You can optionally show a success message here
+    console.log('✅ Google Sheets response:', result);
+    if (result.success) {
+      console.log('✅ Data saved to Google Sheets successfully!');
+    } else {
+      console.warn('⚠️ Google Sheets returned error:', result.error);
+    }
   })
   .catch((error) => {
     console.error('❌ Failed to send to Google Sheets:', error);
-    // Show error in console but don't bother the user
-    // WhatsApp still works even if Google Sheets fails
+    // Don't show error to user - WhatsApp still works
   });
 }
 
-// Function to send to WhatsApp (UNCHANGED - works perfectly)
+// Send to WhatsApp
 function sendToWhatsApp(data) {
   try {
-    // Build the WhatsApp message with all fields
     let whatsappMessage = '';
     whatsappMessage += '📋 *بيانات النموذج:*\n\n';
     whatsappMessage += `👤 *الإسم:* ${data.name}\n`;
@@ -323,19 +328,14 @@ function sendToWhatsApp(data) {
     }
     whatsappMessage += `\n📅 *تاريخ الإرسال:* ${new Date().toLocaleString('ar-SA')}`;
     
-    // Encode the message for URL
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    
-    // Create WhatsApp URL
     const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
     
     console.log('📱 Opening WhatsApp...');
     
-    // Open WhatsApp - THIS IS THE ONLY THING THE USER SEES
     const whatsappWindow = window.open(whatsappURL, '_blank');
     
     if (!whatsappWindow || whatsappWindow.closed) {
-      // If popup blocked, try redirect (works on mobile)
       console.warn('⚠️ WhatsApp popup blocked, trying redirect...');
       window.location.href = whatsappURL;
     } else {
@@ -348,7 +348,7 @@ function sendToWhatsApp(data) {
   }
 }
 
-// Helper function to show status messages
+// Helper function
 function showStatus(type, message) {
   const status = document.getElementById('status');
   status.className = `status ${type}`;
@@ -356,7 +356,7 @@ function showStatus(type, message) {
   status.textContent = message;
 }
 
-// Add Enter key support for all fields
+// Enter key support
 document.addEventListener('keypress', function(e) {
   if (e.key === 'Enter') {
     const target = e.target;
@@ -374,7 +374,7 @@ document.addEventListener('keypress', function(e) {
   }
 });
 
-// Auto-detect and format phone number
+// Phone number formatting
 document.getElementById('phone').addEventListener('input', function() {
   this.value = this.value.replace(/[^0-9+]/g, '');
 });
