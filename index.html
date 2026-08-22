@@ -194,8 +194,7 @@
 // WhatsApp number (without + or 00, just the number)
 const WHATSAPP_NUMBER = '249117693634';
 
-// 🔴 IMPORTANT: REPLACE THIS WITH YOUR ACTUAL APPS SCRIPT WEBHOOK URL
-// After deploying your Apps Script, copy the URL and paste it here
+// Your Google Apps Script Webhook URL
 const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLEW2kfn_692OXMr7qyW9d51DSJEsitH7XEKFADUHwr-b1jn_3tsO3JYijvjq67WRc1w/exec';
 
 function submitToBoth() {
@@ -250,6 +249,9 @@ function submitToBoth() {
     timestamp: new Date().toISOString()
   };
   
+  // Log what we're sending
+  console.log('📤 Sending data to Google Sheets:', formData);
+  
   // --- 1. SEND TO GOOGLE SHEETS SILENTLY via Apps Script ---
   sendToGoogleSheets(formData);
   
@@ -277,30 +279,32 @@ function submitToBoth() {
   }, 4000);
 }
 
-// NEW: Send to Google Sheets SILENTLY using Apps Script Webhook
+// FIXED: Send to Google Sheets using proper fetch
 function sendToGoogleSheets(data) {
-  // Check if URL is configured
-  if (GOOGLE_APPS_SCRIPT_URL.includes('YOUR_ACTUAL_SCRIPT_ID')) {
-    console.warn('⚠️ Please configure your Google Apps Script URL first!');
-    showStatus('info', '⚠️ جاري الإعداد... يرجى المحاولة مرة أخرى');
-    return;
-  }
-  
   // Send data to Google Sheets via POST
   fetch(GOOGLE_APPS_SCRIPT_URL, {
     method: 'POST',
-    mode: 'no-cors', // Important for cross-origin requests
+    // 🔴 REMOVED 'no-cors' - this was the problem!
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(data)
   })
-  .then(() => {
-    console.log('✅ Data sent to Google Sheets successfully!');
+  .then(response => {
+    // Check if response is OK
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(result => {
+    console.log('✅ Data sent to Google Sheets successfully!', result);
+    // You can optionally show a success message here
   })
   .catch((error) => {
     console.error('❌ Failed to send to Google Sheets:', error);
-    // Don't show error to user - WhatsApp still works
+    // Show error in console but don't bother the user
+    // WhatsApp still works even if Google Sheets fails
   });
 }
 
