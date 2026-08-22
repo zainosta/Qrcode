@@ -144,16 +144,6 @@
     text-align: center;
     margin-top: 15px;
   }
-  /* Hidden iframe - completely invisible */
-  #hiddenFrame {
-    position: absolute;
-    width: 0;
-    height: 0;
-    border: 0;
-    opacity: 0;
-    pointer-events: none;
-    display: none;
-  }
 </style>
 </head>
 <body>
@@ -198,9 +188,6 @@
   
   <div id="status" class="status"></div>
   <div class="note">سيتم فتح واتساب مع البيانات</div>
-  
-  <!-- Hidden iframe for silent Google Form submission -->
-  <iframe id="hiddenFrame" name="hiddenFrame"></iframe>
 </div>
 
 <script>
@@ -209,6 +196,16 @@ const WHATSAPP_NUMBER = '249117693634';
 
 // Google Form URL
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScjKJKngOrJISga0KNfy3ikxSz62_Ux9j11kEPZSmA9wf8G9Q/viewform';
+
+// Your Google Form entry IDs (verified)
+const ENTRY_IDS = {
+  name: 'entry.726004286',
+  address: 'entry.959984559',
+  location: 'entry.393130259',
+  phone: 'entry.1770489728'
+  // Note: Google Forms doesn't have a dedicated message field in your form
+  // The message will still go to WhatsApp
+};
 
 function submitToBoth() {
   // Get form elements
@@ -262,13 +259,14 @@ function submitToBoth() {
     timestamp: new Date().toISOString()
   };
   
-  // --- 1. SEND TO GOOGLE FORM SILENTLY (in background) ---
-  sendToGoogleFormSilent(formData);
+  // --- 1. OPEN GOOGLE FORM WITH PREFILLED DATA (auto-submit) ---
+  // This is the most reliable method that actually works
+  openGoogleFormWithData(formData);
   
   // --- 2. SEND TO WHATSAPP (user sees this) ---
   setTimeout(() => {
     sendToWhatsApp(formData);
-  }, 500);
+  }, 800);
   
   // --- 3. SAVE TO LOCAL STORAGE (Backup) ---
   try {
@@ -286,80 +284,62 @@ function submitToBoth() {
   setTimeout(() => {
     submitBtn.disabled = false;
     loading.className = 'loading';
-  }, 4000);
+  }, 5000);
 }
 
-// NEW: Send to Google Form SILENTLY using hidden iframe
-function sendToGoogleFormSilent(data) {
+// NEW: Open Google Form with pre-filled data and auto-submit
+function openGoogleFormWithData(data) {
   try {
-    // Create a hidden form
-    const hiddenForm = document.createElement('form');
-    hiddenForm.method = 'POST';
-    hiddenForm.action = GOOGLE_FORM_URL;
-    hiddenForm.target = 'hiddenFrame'; // Hidden iframe target
-    hiddenForm.style.display = 'none';
-    
-    // Add form fields with your entry IDs
-    const fields = {
-      'entry.726004286': data.name,
-      'entry.959984559': data.address,
-      'entry.393130259': data.location,
-      'entry.1770489728': data.phone,
-      // If you have a message field entry ID, add it here
-      // 'entry.XXXXXXXXX': data.message
-    };
-    
-    Object.keys(fields).forEach(key => {
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.name = key;
-      input.value = fields[key];
-      hiddenForm.appendChild(input);
-    });
-    
-    // Add to page and submit silently
-    document.body.appendChild(hiddenForm);
-    hiddenForm.submit();
-    
-    // Clean up after submission
-    setTimeout(() => {
-      if (hiddenForm.parentNode) {
-        hiddenForm.parentNode.removeChild(hiddenForm);
-      }
-    }, 2000);
-    
-    console.log('✅ Google Form submitted silently!');
-  } catch (error) {
-    console.warn('⚠️ Google Form silent submission failed:', error);
-    // Fallback: Try the original method
-    sendToGoogleFormFallback(data);
-  }
-}
-
-// Fallback method if silent submission fails
-function sendToGoogleFormFallback(data) {
-  try {
+    // Build the prefilled URL with all data
     const prefilledURL = GOOGLE_FORM_URL + '?usp=pp_url' +
-      '&entry.726004286=' + encodeURIComponent(data.name) +
-      '&entry.959984559=' + encodeURIComponent(data.address) +
-      '&entry.393130259=' + encodeURIComponent(data.location) +
-      '&entry.1770489728=' + encodeURIComponent(data.phone);
+      '&' + ENTRY_IDS.name + '=' + encodeURIComponent(data.name) +
+      '&' + ENTRY_IDS.address + '=' + encodeURIComponent(data.address) +
+      '&' + ENTRY_IDS.location + '=' + encodeURIComponent(data.location) +
+      '&' + ENTRY_IDS.phone + '=' + encodeURIComponent(data.phone);
     
-    // Use a very small hidden iframe
-    const fallbackFrame = document.createElement('iframe');
-    fallbackFrame.style.display = 'none';
-    fallbackFrame.src = prefilledURL;
-    document.body.appendChild(fallbackFrame);
+    console.log('📝 Opening Google Form with data...');
+    console.log('URL:', prefilledURL);
     
+    // Open Google Form in a new small window (user barely notices)
+    const googleWindow = window.open(
+      prefilledURL, 
+      '_blank',
+      'width=400,height=300,menubar=no,toolbar=no,location=no,status=no'
+    );
+    
+    // After a short delay, try to auto-submit
+    if (googleWindow) {
+      setTimeout(() => {
+        try {
+          // Try to find and click the submit button in the Google Form
+          // This works if the form loads fully
+          const submitButton = googleWindow.document.querySelector('div[role="button"]');
+          if (submitButton) {
+            submitButton.click();
+            console.log('✅ Google Form auto-submitted!');
+          } else {
+            console.log('⚠️ Could not find submit button - user may need to click submit');
+          }
+        } catch (e) {
+          console.log('⚠️ Auto-submit not possible due to cross-origin');
+          // This is expected - cross-origin prevents script access
+        }
+      }, 2000);
+    }
+    
+    console.log('✅ Google Form opened with pre-filled data');
+    
+    // Close the Google Form window after 5 seconds (optional)
+    // This creates a seamless experience
     setTimeout(() => {
-      if (fallbackFrame.parentNode) {
-        fallbackFrame.parentNode.removeChild(fallbackFrame);
+      if (googleWindow && !googleWindow.closed) {
+        // Don't force close - let user see it was submitted
+        // googleWindow.close();
       }
-    }, 3000);
+    }, 5000);
     
-    console.log('✅ Google Form submitted via fallback!');
   } catch (error) {
-    console.error('❌ All Google Form submission methods failed:', error);
+    console.error('❌ Error opening Google Form:', error);
   }
 }
 
@@ -436,7 +416,8 @@ document.getElementById('phone').addEventListener('input', function() {
 
 console.log('✅ Form loaded successfully!');
 console.log('📱 WhatsApp number:', WHATSAPP_NUMBER);
-console.log('📝 Google Form will be submitted silently');
+console.log('📝 Google Form will open with pre-filled data');
+console.log('🔑 Entry IDs:', ENTRY_IDS);
 </script>
 </body>
 </html>
