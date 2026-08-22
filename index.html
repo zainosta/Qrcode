@@ -70,8 +70,18 @@
 
 <script>
 const WHATSAPP_NUMBER = '249117693634';
-// ⚠️ IMPORTANT: Replace this URL with the one you copied from your Apps Script deployment
-const WEBHOOK_URL = 'https://script.google.com/macros/library/d/1ZkD6C1VEl3KbV_iviAi8nIfYSifC1OuP6D4LDnbWXgZmjfAauCtUfMLo/7';
+
+// ⚠️ IMPORTANT: Replace these with your actual entry IDs from the form
+// To find them: Right-click on each field in your form → Inspect → look for name="entry.XXXXX"
+const FORM_ENTRY_IDS = {
+  name: 'entry.726004286',    // Your actual ID
+  address: 'entry.959984559', // Your actual ID
+  location: 'entry.393130259',// Your actual ID
+  phone: 'entry.1770489728'   // Your actual ID
+};
+
+// Your Google Form URL
+const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScjKJKngOrJISga0KNfy3ikxSz62_Ux9j11kEPZSmA9wf8G9Q/viewform';
 
 function submitForm() {
   const name = document.getElementById('name').value.trim();
@@ -95,29 +105,18 @@ function submitForm() {
   submitBtn.disabled = true;
   loading.className = 'loading active';
   
-  const formData = { name, address, location, phone };
+  // Prepare data for Google Form
+  const formData = {
+    name: name,
+    address: address,
+    location: location,
+    phone: phone
+  };
   
-  console.log('📡 Sending data to Google Sheet via Webhook:', WEBHOOK_URL);
+  // --- 1. SEND TO GOOGLE FORM (using hidden iframe - works silently) ---
+  submitToGoogleForm(formData);
   
-  fetch(WEBHOOK_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(formData)
-  })
-  .then(response => response.json())
-  .then(result => {
-    console.log('✅ Google Sheet Webhook Response:', result);
-    if (result.success) {
-      console.log('✅ Data successfully written to Google Sheet!');
-    } else {
-      console.warn('⚠️ Webhook returned an error:', result.error);
-    }
-  })
-  .catch(error => {
-    console.error('❌ Failed to send data to Google Sheet:', error);
-  });
-  
-  // Send to WhatsApp (this part is unchanged)
+  // --- 2. SEND TO WHATSAPP ---
   setTimeout(() => {
     sendToWhatsApp({ ...formData, message });
   }, 500);
@@ -129,6 +128,55 @@ function submitForm() {
     loading.className = 'loading';
   }, 4000);
 }
+
+// This function submits data to Google Form using a hidden iframe
+function submitToGoogleForm(data) {
+  try {
+    // Create a hidden form
+    const hiddenForm = document.createElement('form');
+    hiddenForm.method = 'POST';
+    hiddenForm.action = GOOGLE_FORM_URL;
+    hiddenForm.target = 'hiddenFrame';
+    hiddenForm.style.display = 'none';
+    
+    // Add the entry fields with your data
+    const fields = {
+      [FORM_ENTRY_IDS.name]: data.name,
+      [FORM_ENTRY_IDS.address]: data.address,
+      [FORM_ENTRY_IDS.location]: data.location,
+      [FORM_ENTRY_IDS.phone]: data.phone
+    };
+    
+    Object.keys(fields).forEach(key => {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.name = key;
+      input.value = fields[key];
+      hiddenForm.appendChild(input);
+    });
+    
+    // Add to page and submit
+    document.body.appendChild(hiddenForm);
+    hiddenForm.submit();
+    
+    // Clean up
+    setTimeout(() => {
+      if (hiddenForm.parentNode) {
+        hiddenForm.parentNode.removeChild(hiddenForm);
+      }
+    }, 2000);
+    
+    console.log('✅ Google Form submitted successfully!');
+  } catch (error) {
+    console.error('❌ Failed to submit to Google Form:', error);
+  }
+}
+
+// Create hidden iframe for form submission
+const iframe = document.createElement('iframe');
+iframe.name = 'hiddenFrame';
+iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;opacity:0;display:none;';
+document.body.appendChild(iframe);
 
 function sendToWhatsApp(data) {
   let msg = '📋 *بيانات النموذج:*\n\n';
@@ -163,9 +211,8 @@ document.getElementById('phone').addEventListener('input', function() {
   this.value = this.value.replace(/[^0-9+]/g, '');
 });
 
-console.log('✅ Form loaded successfully!');
-console.log('📱 WhatsApp number:', WHATSAPP_NUMBER);
-console.log('📡 Webhook URL:', WEBHOOK_URL);
+console.log('✅ Form loaded!');
+console.log('📱 WhatsApp:', WHATSAPP_NUMBER);
 </script>
 </body>
 </html>
