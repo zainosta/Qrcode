@@ -71,13 +71,7 @@
 <script>
 const WHATSAPP_NUMBER = '249117693634';
 
-// ⚠️ REPLACE THIS WITH YOUR ACTUAL APPS SCRIPT WEBHOOK URL
-// Steps to get this:
-// 1. Open your Google Sheet
-// 2. Extensions → Apps Script
-// 3. Paste the code below
-// 4. Deploy → New Deployment → Web app → Anyone
-// 5. Copy the URL
+// ⚠️ REPLACE WITH YOUR APPS SCRIPT URL FROM STEP 1
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxImmqZPa_3CASo5I2FJ29OrbDKHpLDS8mhkPKIBqiERQlQYQN-y-L4eSjAiDwxeJekYA/exec';
 
 function submitForm() {
@@ -104,9 +98,7 @@ function submitForm() {
   
   const formData = { name, address, location, phone };
   
-  console.log('📡 Sending to webhook...');
-  
-  // Send to Google Sheet via Apps Script (SILENT - no popup)
+  // Send to Google Sheet (100% SILENT - no popup)
   fetch(WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -114,13 +106,13 @@ function submitForm() {
   })
   .then(response => response.json())
   .then(result => {
-    console.log('✅ Data saved to Google Sheet:', result);
+    console.log('✅ Data saved:', result);
   })
   .catch(error => {
     console.error('❌ Error:', error);
   });
   
-  // Send to WhatsApp (what the user sees)
+  // Open WhatsApp (this is the ONLY thing the user sees)
   setTimeout(() => {
     sendToWhatsApp({ ...formData, message });
   }, 300);
@@ -142,7 +134,6 @@ function sendToWhatsApp(data) {
   if (data.message) msg += `\n💬 *رسالة إضافية:*\n${data.message}\n`;
   msg += `\n📅 *تاريخ الإرسال:* ${new Date().toLocaleString('ar-SA')}`;
   
-  // Opens WhatsApp - THIS IS THE ONLY THING THE USER SEES
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
@@ -169,6 +160,7 @@ document.getElementById('phone').addEventListener('input', function() {
 
 console.log('✅ Form loaded!');
 console.log('📱 WhatsApp:', WHATSAPP_NUMBER);
+console.log('📡 Webhook:', WEBHOOK_URL);
 </script>
 </body>
 </html>
