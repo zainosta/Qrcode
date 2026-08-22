@@ -194,7 +194,7 @@
 // WhatsApp number
 const WHATSAPP_NUMBER = '249117693634';
 
-// ⚠️ IMPORTANT: Replace this with your NEW Apps Script URL after redeploying
+// ✅ YOUR ACTUAL APPS SCRIPT URL (keep this as is)
 const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw8t_pqPvao8P0XNI16tj3pcmEL_1h2B6eC9td4iNHm73rudA6FegrSxcRXbMHzNojeGA/exec';
 
 function submitToBoth() {
@@ -278,14 +278,9 @@ function submitToBoth() {
   }, 4000);
 }
 
-// Send to Google Sheets
+// ✅ FIXED: Send to Google Sheets - removed incorrect validation
 function sendToGoogleSheets(data) {
-  // Check if URL is configured
-  if (GOOGLE_APPS_SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbw8t_pqPvao8P0XNI16tj3pcmEL_1h2B6eC9td4iNHm73rudA6FegrSxcRXbMHzNojeGA/exec')) {
-    console.error('❌ Please update the GOOGLE_APPS_SCRIPT_URL with your actual webhook URL');
-    showStatus('error', '❌ خطأ في الإعدادات. يرجى الاتصال بالدعم');
-    return;
-  }
+  console.log('📡 Sending POST request to:', GOOGLE_APPS_SCRIPT_URL);
   
   fetch(GOOGLE_APPS_SCRIPT_URL, {
     method: 'POST',
@@ -295,6 +290,7 @@ function sendToGoogleSheets(data) {
     body: JSON.stringify(data)
   })
   .then(response => {
+    console.log('📥 Response status:', response.status);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
