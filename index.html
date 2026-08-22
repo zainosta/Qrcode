@@ -310,11 +310,10 @@ function sendToGoogleForm(data) {
       // Since Google Forms has CORS restrictions, we'll open it
       // with pre-filled parameters if possible
       const prefilledURL = GOOGLE_FORM_URL + '?usp=pp_url' +
-        '&entry.XXX=' + encodeURIComponent(data.name) +
-        '&entry.YYY=' + encodeURIComponent(data.address) +
-        '&entry.ZZZ=' + encodeURIComponent(data.location) +
-        '&entry.WWW=' + encodeURIComponent(data.phone) +
-        '&entry.VVV=' + encodeURIComponent(data.message);
+        '&entry.726004286=' + encodeURIComponent(data.name) +
+        '&entry.959984559=' + encodeURIComponent(data.address) +
+        '&entry.393130259=' + encodeURIComponent(data.location) +
+        '&entry.1770489728=' + encodeURIComponent(data.phone);
       
       // Open in new window
       window.open(prefilledURL, '_blank');
