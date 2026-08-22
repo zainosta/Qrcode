@@ -71,16 +71,14 @@
 <script>
 const WHATSAPP_NUMBER = '249117693634';
 
-// Your Google Form entry IDs (verified from your form)
-const FORM_ENTRY_IDS = {
-  name: 'entry.726004286',
-  address: 'entry.959984559',
-  location: 'entry.393130259',
-  phone: 'entry.1770489728'
-};
-
-// Your Google Form URL
-const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScjKJKngOrJISga0KNfy3ikxSz62_Ux9j11kEPZSmA9wf8G9Q/viewform';
+// ⚠️ REPLACE THIS WITH YOUR ACTUAL APPS SCRIPT WEBHOOK URL
+// Steps to get this:
+// 1. Open your Google Sheet
+// 2. Extensions → Apps Script
+// 3. Paste the code below
+// 4. Deploy → New Deployment → Web app → Anyone
+// 5. Copy the URL
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxImmqZPa_3CASo5I2FJ29OrbDKHpLDS8mhkPKIBqiERQlQYQN-y-L4eSjAiDwxeJekYA/exec';
 
 function submitForm() {
   const name = document.getElementById('name').value.trim();
@@ -104,74 +102,35 @@ function submitForm() {
   submitBtn.disabled = true;
   loading.className = 'loading active';
   
-  const formData = { name, address, location, phone, message };
+  const formData = { name, address, location, phone };
   
-  // --- 1. OPEN GOOGLE FORM WITH PRE-FILLED DATA ---
-  openGoogleFormWithData(formData);
+  console.log('📡 Sending to webhook...');
   
-  // --- 2. SEND TO WHATSAPP ---
+  // Send to Google Sheet via Apps Script (SILENT - no popup)
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData)
+  })
+  .then(response => response.json())
+  .then(result => {
+    console.log('✅ Data saved to Google Sheet:', result);
+  })
+  .catch(error => {
+    console.error('❌ Error:', error);
+  });
+  
+  // Send to WhatsApp (what the user sees)
   setTimeout(() => {
-    sendToWhatsApp(formData);
-  }, 800);
+    sendToWhatsApp({ ...formData, message });
+  }, 300);
   
   showStatus('success', '✅ تم الإرسال بنجاح! جاري فتح واتساب...');
   
   setTimeout(() => {
     submitBtn.disabled = false;
     loading.className = 'loading';
-  }, 5000);
-}
-
-function openGoogleFormWithData(data) {
-  try {
-    // Build the pre-filled URL
-    const prefilledURL = GOOGLE_FORM_URL + '?usp=pp_url' +
-      '&' + FORM_ENTRY_IDS.name + '=' + encodeURIComponent(data.name) +
-      '&' + FORM_ENTRY_IDS.address + '=' + encodeURIComponent(data.address) +
-      '&' + FORM_ENTRY_IDS.location + '=' + encodeURIComponent(data.location) +
-      '&' + FORM_ENTRY_IDS.phone + '=' + encodeURIComponent(data.phone);
-    
-    console.log('📝 Opening Google Form with pre-filled data');
-    console.log('🔗 URL:', prefilledURL);
-    
-    // Open Google Form in a small popup window (closes automatically)
-    const formWindow = window.open(
-      prefilledURL,
-      '_blank',
-      'width=500,height=600,menubar=no,toolbar=no,location=no,status=no'
-    );
-    
-    // Try to auto-submit after form loads
-    if (formWindow) {
-      // Wait for the page to load
-      setTimeout(() => {
-        try {
-          // Try to find and click the submit button
-          const doc = formWindow.document;
-          const submitButton = doc.querySelector('div[role="button"]');
-          if (submitButton) {
-            submitButton.click();
-            console.log('✅ Google Form auto-submitted!');
-            
-            // Close the window after submission
-            setTimeout(() => {
-              if (!formWindow.closed) {
-                formWindow.close();
-              }
-            }, 1500);
-          } else {
-            console.log('⚠️ Submit button not found, user may need to click it');
-          }
-        } catch (e) {
-          // Cross-origin error is expected - can't access form DOM
-          console.log('ℹ️ Form opened, user will see it pre-filled');
-        }
-      }, 2000);
-    }
-    
-  } catch (error) {
-    console.error('❌ Error opening Google Form:', error);
-  }
+  }, 4000);
 }
 
 function sendToWhatsApp(data) {
@@ -183,6 +142,7 @@ function sendToWhatsApp(data) {
   if (data.message) msg += `\n💬 *رسالة إضافية:*\n${data.message}\n`;
   msg += `\n📅 *تاريخ الإرسال:* ${new Date().toLocaleString('ar-SA')}`;
   
+  // Opens WhatsApp - THIS IS THE ONLY THING THE USER SEES
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
