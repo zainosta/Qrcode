@@ -1,32 +1,145 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نموذج التواصل</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
-  body{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
-  .container{background:white;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.3);max-width:500px;width:100%}
-  h2{color:#333;margin-bottom:20px;text-align:center}
-  .form-group{margin-bottom:20px}
-  label{display:block;color:#555;margin-bottom:8px;font-weight:bold}
-  .required{color:#e74c3c}
-  input,textarea{width:100%;padding:12px 15px;border:2px solid #ddd;border-radius:8px;font-size:16px;background:#f9f9f9}
-  input:focus,textarea:focus{outline:none;border-color:#667eea;background:white}
-  textarea{resize:vertical;min-height:100px}
-  button{width:100%;padding:15px;background:#25D366;color:white;border:none;border-radius:8px;font-size:18px;font-weight:bold;cursor:pointer;transition:all 0.3s;margin-top:10px}
-  button:hover{background:#128C7E}
-  button:disabled{opacity:0.6;cursor:not-allowed}
-  .status{margin-top:15px;padding:12px;border-radius:8px;display:none;text-align:center;font-weight:bold}
-  .success{display:block;background:#d4edda;color:#155724}
-  .error{display:block;background:#f8d7da;color:#721c24}
-  .loading{display:none;text-align:center;margin-top:15px}
-  .loading.active{display:block}
-  .spinner{display:inline-block;width:30px;height:30px;border:4px solid #f3f3f3;border-top:4px solid #667eea;border-radius:50%;animation:spin 1s linear infinite}
-  @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-  .note{font-size:12px;color:#888;text-align:center;margin-top:15px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نموذج التواصل - سحابة مجانية</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 100%;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      color: #555;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    .required {
+      color: #e74c3c;
+    }
+    input,
+    textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      background: #f9f9f9;
+      transition: 0.2s;
+    }
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      background: #25D366;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #128C7E;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+      text-align: center;
+      font-weight: bold;
+    }
+    .success {
+      display: block;
+      background: #d4edda;
+      color: #155724;
+    }
+    .error {
+      display: block;
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 15px;
+    }
+    .loading.active {
+      display: block;
+    }
+    .spinner {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .note {
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      margin-top: 15px;
+    }
+    .db-status {
+      font-size: 12px;
+      color: #1a5e8c;
+      text-align: center;
+      margin-top: 5px;
+      background: #e3f2fd;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+  </style>
 </head>
 <body>
 <div class="container">
@@ -54,113 +167,177 @@
       <textarea id="message" placeholder="أدخل أي تفاصيل إضافية..."></textarea>
     </div>
     
-    <button type="button" onclick="submitForm()" id="submitBtn">
-      📱 إرسال عبر واتساب
+    <button type="button" onclick="handleSubmit()" id="submitBtn">
+      📱 إرسال عبر واتساب + حفظ سحابي
     </button>
   </form>
   
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <p style="margin-top:10px;color:#666;">جاري الإرسال...</p>
+    <p style="margin-top:10px;color:#666;">جاري الحفظ في السحابة وفتح واتساب...</p>
   </div>
   
   <div id="status" class="status"></div>
-  <div class="note">سيتم فتح واتساب مع البيانات</div>
+  <div style="text-align:center; margin-top:10px;">
+    <span class="db-status" id="dbStatus">☁️ قاعدة بيانات سحابية (Supabase)</span>
+  </div>
+  <div class="note">📌 يتم حفظ البيانات في سحابة مجانية + فتح واتساب بنقرة واحدة</div>
 </div>
 
+<!-- ========== SUPABASE CLIENT ========== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+
 <script>
-const WHATSAPP_NUMBER = '249117693634';
+  (function() {
+    'use strict';
 
-// ⚠️ REPLACE WITH YOUR APPS SCRIPT URL FROM STEP 1
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx9z0M7yCWKt3E4f_4g5AKNXmlwFG0bHkuW2C_v5Oqqa-xJ3WChl4CssTA2w17wDgsr/exec';
+    // ---------- CONFIG ----------
+    const WHATSAPP_NUMBER = '249117693634';  // رقم واتساب
 
-function submitForm() {
-  const name = document.getElementById('name').value.trim();
-  const address = document.getElementById('address').value.trim();
-  const location = document.getElementById('location').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  const message = document.getElementById('message').value.trim();
-  
-  const status = document.getElementById('status');
-  const submitBtn = document.getElementById('submitBtn');
-  const loading = document.getElementById('loading');
-  
-  status.className = 'status';
-  status.style.display = 'none';
-  
-  if (!name) { showStatus('error', '❌ الرجاء إدخال الإسم'); return; }
-  if (!address) { showStatus('error', '❌ الرجاء إدخال العنوان'); return; }
-  if (!location) { showStatus('error', '❌ الرجاء إدخال الموقع'); return; }
-  if (!phone) { showStatus('error', '❌ الرجاء إدخال رقم التلفون'); return; }
-  
-  submitBtn.disabled = true;
-  loading.className = 'loading active';
-  
-  const formData = { name, address, location, phone };
-  
-  // Send to Google Sheet (100% SILENT - no popup)
-  fetch(WEBHOOK_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(formData)
-  })
-  .then(response => response.json())
-  .then(result => {
-    console.log('✅ Data saved:', result);
-  })
-  .catch(error => {
-    console.error('❌ Error:', error);
-  });
-  
-  // Open WhatsApp (this is the ONLY thing the user sees)
-  setTimeout(() => {
-    sendToWhatsApp({ ...formData, message });
-  }, 300);
-  
-  showStatus('success', '✅ تم الإرسال بنجاح! جاري فتح واتساب...');
-  
-  setTimeout(() => {
-    submitBtn.disabled = false;
-    loading.className = 'loading';
-  }, 4000);
-}
+    // 🔐 Supabase credentials (مجانية وقوية)
+    // سجل في supabase.com وأنشئ مشروعاً، ثم ضع هنا URL و anon key
+    const SUPABASE_URL = 'https://znrufgknvzawwxbgdoed.supabase.co/rest/v1/contacts';          // ⚠️ غيّر هذا
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpucnVmZ2tudnphd3d4Ymdkb2VkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NzY4MjYsImV4cCI6MjEwMzA1MjgyNn0.fx6ppzha59T6rEnWki7jmVp35frNwP8luWWjFIIqGLw';                       // ⚠️ غيّر هذا
+    const TABLE_NAME = 'contacts';   // اسم الجدول الذي ستنشئه في Supabase
 
-function sendToWhatsApp(data) {
-  let msg = '📋 *بيانات النموذج:*\n\n';
-  msg += `👤 *الإسم:* ${data.name}\n`;
-  msg += `🏠 *العنوان:* ${data.address}\n`;
-  msg += `📍 *الموقع:* ${data.location}\n`;
-  msg += `📞 *التلفون:* ${data.phone}\n`;
-  if (data.message) msg += `\n💬 *رسالة إضافية:*\n${data.message}\n`;
-  msg += `\n📅 *تاريخ الإرسال:* ${new Date().toLocaleString('ar-SA')}`;
-  
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-}
+    // تهيئة عميل Supabase
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function showStatus(type, message) {
-  const status = document.getElementById('status');
-  status.className = `status ${type}`;
-  status.style.display = 'block';
-  status.textContent = message;
-}
+    // ---------- دالة رئيسية (نقرة واحدة) ----------
+    window.handleSubmit = async function() {
+      const name = document.getElementById('name').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const message = document.getElementById('message').value.trim();
 
-document.addEventListener('keypress', function(e) {
-  if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
-    e.preventDefault();
-    const inputs = document.querySelectorAll('input, textarea');
-    let index = Array.from(inputs).indexOf(e.target);
-    if (index < inputs.length - 1) inputs[index + 1].focus();
-    else submitForm();
-  }
-});
+      const statusEl = document.getElementById('status');
+      const submitBtn = document.getElementById('submitBtn');
+      const loadingEl = document.getElementById('loading');
+      const dbStatusEl = document.getElementById('dbStatus');
 
-document.getElementById('phone').addEventListener('input', function() {
-  this.value = this.value.replace(/[^0-9+]/g, '');
-});
+      // إخفاء الحالة السابقة
+      statusEl.className = 'status';
+      statusEl.style.display = 'none';
 
-console.log('✅ Form loaded!');
-console.log('📱 WhatsApp:', WHATSAPP_NUMBER);
-console.log('📡 Webhook:', WEBHOOK_URL);
+      // التحقق من الحقول المطلوبة
+      if (!name) { showStatus('error', '❌ الرجاء إدخال الإسم'); return; }
+      if (!address) { showStatus('error', '❌ الرجاء إدخال العنوان'); return; }
+      if (!location) { showStatus('error', '❌ الرجاء إدخال الموقع'); return; }
+      if (!phone) { showStatus('error', '❌ الرجاء إدخال رقم التلفون'); return; }
+
+      // تعطيل الزر وإظهار التحميل
+      submitBtn.disabled = true;
+      loadingEl.className = 'loading active';
+      dbStatusEl.textContent = '⏳ جاري الحفظ في السحابة...';
+
+      const formData = { name, address, location, phone, message };
+
+      try {
+        // 1. حفظ في Supabase (سحابة مجانية وقوية)
+        const { data, error } = await supabaseClient
+          .from(TABLE_NAME)
+          .insert([
+            { 
+              name: formData.name,
+              address: formData.address,
+              location: formData.location,
+              phone: formData.phone,
+              message: formData.message || '',
+              created_at: new Date().toISOString()
+            }
+          ]);
+
+        if (error) {
+          console.error('❌ خطأ Supabase:', error);
+          throw new Error(error.message);
+        }
+
+        console.log('✅ تم الحفظ في Supabase:', data);
+        dbStatusEl.textContent = '✅ محفوظ في السحابة (Supabase)';
+
+        // 2. فتح واتساب (بعد نجاح الحفظ)
+        setTimeout(() => {
+          sendToWhatsApp(formData);
+        }, 300);
+
+        // 3. عرض رسالة نجاح
+        showStatus('success', '✅ تم الحفظ السحابي وإرسال واتساب!');
+
+        // 4. إعادة تمكين الزر بعد 3 ثواني
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          loadingEl.className = 'loading';
+        }, 3000);
+
+      } catch (err) {
+        console.error('❌ فشل الحفظ:', err);
+        dbStatusEl.textContent = '⚠️ فشل الحفظ السحابي';
+        showStatus('error', '❌ خطأ في الحفظ: ' + err.message);
+        submitBtn.disabled = false;
+        loadingEl.className = 'loading';
+      }
+    };
+
+    // ---------- فتح واتساب ----------
+    function sendToWhatsApp(data) {
+      let msg = '📋 *بيانات النموذج:*\n\n';
+      msg += `👤 *الإسم:* ${data.name}\n`;
+      msg += `🏠 *العنوان:* ${data.address}\n`;
+      msg += `📍 *الموقع:* ${data.location}\n`;
+      msg += `📞 *التلفون:* ${data.phone}\n`;
+      if (data.message) msg += `\n💬 *رسالة إضافية:*\n${data.message}\n`;
+      msg += `\n📅 *تاريخ الإرسال:* ${new Date().toLocaleString('ar-SA')}`;
+
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // ---------- عرض الحالة ----------
+    function showStatus(type, message) {
+      const status = document.getElementById('status');
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+      status.textContent = message;
+    }
+
+    // ---------- أحداث إضافية ----------
+    document.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+        e.preventDefault();
+        const inputs = document.querySelectorAll('input, textarea');
+        let index = Array.from(inputs).indexOf(e.target);
+        if (index < inputs.length - 1) inputs[index + 1].focus();
+        else handleSubmit();
+      }
+    });
+
+    document.getElementById('phone').addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9+]/g, '');
+    });
+
+    // التحقق من الاتصال بـ Supabase عند التحميل
+    async function checkSupabase() {
+      try {
+        const { data, error } = await supabaseClient
+          .from(TABLE_NAME)
+          .select('count', { count: 'exact', head: true });
+        if (error) throw error;
+        console.log('✅ Supabase متصل، الجدول:', TABLE_NAME);
+        document.getElementById('dbStatus').textContent = '☁️ قاعدة بيانات سحابية (Supabase) متصلة';
+      } catch (e) {
+        console.warn('⚠️ فشل الاتصال بـ Supabase:', e.message);
+        document.getElementById('dbStatus').textContent = '⚠️ تأكد من إعداد Supabase بشكل صحيح';
+        document.getElementById('dbStatus').style.background = '#ffecb3';
+      }
+    }
+
+    // تنفيذ الفحص بعد تحميل الصفحة
+    setTimeout(checkSupabase, 500);
+
+    console.log('✅ النموذج جاهز (حفظ سحابي + واتساب)');
+    console.log('📱 رقم واتساب:', WHATSAPP_NUMBER);
+    console.log('☁️ Supabase URL:', SUPABASE_URL);
+  })();
 </script>
 </body>
 </html>
